@@ -1,5 +1,4 @@
 import serial
-import time
 
 class Omron2JCIE_BU01:
     def __init__(self, portName):
