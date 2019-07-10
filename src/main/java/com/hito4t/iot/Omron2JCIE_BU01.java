@@ -24,18 +24,30 @@ public class Omron2JCIE_BU01 implements AutoCloseable {
         noise = toShort(bytes, 11) * 0.01;
     }
 
+    /**
+     * Temperature (degC)
+     */
     public double getTemperature() {
         return temperature;
     }
 
+    /**
+     * Relative humidity (%)
+     */
     public double getHumidity() {
         return humidity;
     }
 
+    /**
+     * Ambient light (lx)
+     */
     public double getLight() {
         return light;
     }
 
+    /**
+     * Sound noise (dB)
+     */
     public double getNoise() {
         return noise;
     }
@@ -71,8 +83,10 @@ public class Omron2JCIE_BU01 implements AutoCloseable {
 
         byte[] responseHeader = new byte[7];
         port.readBytes(responseHeader, responseHeader.length);
+        if (toShort(responseHeader, 0) != 0x4252) {
+            throw new IOException(String.format("Illegal response header : %04X", toShort(responseHeader, 0)));
+        }
 
-        debug(String.format("Header = %4X", toShort(responseHeader, 0)));
         int length = toShort(responseHeader, 2);
         debug(String.format("Length = %d", length));
         debug(String.format("Command = %x", responseHeader[4]));
@@ -80,7 +94,7 @@ public class Omron2JCIE_BU01 implements AutoCloseable {
             byte[] errorCode = new byte[1];
             port.readBytes(errorCode, errorCode.length);
             throw new IOException(String.format("Read error : %02X", errorCode[0]));
-        }
+        }  
 
 
         byte[] bytes = new byte[length - 3];
