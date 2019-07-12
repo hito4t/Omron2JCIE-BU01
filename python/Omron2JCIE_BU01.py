@@ -37,9 +37,9 @@ class Omron2JCIE_BU01:
         len = self.__res_to_int16(bytes, 2)
 
         # Command
-        if (ord(bytes[4]) == 0x81):
+        if (self.__b(bytes[4]) == 0x81):
             errorBytes = self.__serial.read(1)
-            raise IOError("Read error :" + hex(ord(errorBytes[0])))
+            raise IOError("Read error :" + hex(self.__b(errorBytes[0])))
 
         bytes = self.__serial.read(len - 3)
 
@@ -70,8 +70,14 @@ class Omron2JCIE_BU01:
 
 
     def __res_to_int16(self, bytes, i):
-        return ord(bytes[i]) | (ord(bytes[i + 1]) << 8)
+        return self.__b(bytes[i]) | (self.__b(bytes[i + 1]) << 8)
 
+
+    def __b(self, b):
+        # for supporting both old pySerial and new pySerial
+        if type(b) is str:
+            return ord(b)
+        return b
 
     def close(self):
         self.__serial.close()
