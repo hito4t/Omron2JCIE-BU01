@@ -1,6 +1,9 @@
 package com.hito4t.iot;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fazecast.jSerialComm.*;
 
 public class Omron2JCIE_BU01 implements AutoCloseable {
@@ -14,7 +17,7 @@ public class Omron2JCIE_BU01 implements AutoCloseable {
     public Omron2JCIE_BU01(String portName) throws Exception {
         port = getPort(portName);
     }
-    
+
     public void update() throws Exception {
         byte[] bytes = readDataShort(port);
 
@@ -94,7 +97,7 @@ public class Omron2JCIE_BU01 implements AutoCloseable {
             byte[] errorCode = new byte[1];
             port.readBytes(errorCode, errorCode.length);
             throw new IOException(String.format("Read error : %02X", errorCode[0]));
-        }  
+        }
 
 
         byte[] bytes = new byte[length - 3];
@@ -124,6 +127,7 @@ public class Omron2JCIE_BU01 implements AutoCloseable {
 
 
     private SerialPort getPort(String portName) throws Exception {
+        List<String> portNames = new ArrayList<String>();
         for (SerialPort port : SerialPort.getCommPorts()) {
             if (port.getSystemPortName().equals(portName)) {
                 port.setBaudRate(115200);
@@ -132,9 +136,11 @@ public class Omron2JCIE_BU01 implements AutoCloseable {
                 }
                 port.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 1000, 1000);
                 return port;
+            } else {
+                portNames.add(port.getSystemPortName());
             }
         }
-        throw new Exception("Not found.");
+        throw new Exception("Port \"" + portName + "\" is not found (found ports = " + portNames + ").");
     }
 
     private static void debug(String line) {
